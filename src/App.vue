@@ -42,8 +42,16 @@
                     </div>
                     <div class="navbar-end">
                         <div class="navbar-item">
-                            <div class="buttons">
-                                <a class="button is-light">
+                            <div class="buttons" v-if="isLoggedIn">
+                                <router-link to="/profile" class="button is-light">
+                                    <strong>{{ currentUsername }}</strong>
+                                </router-link>
+                                <a class="button" v-on:click="logout()">
+                                    Log Out
+                                </a>
+                            </div>
+                            <div class="buttons" v-else>
+                                <a class="button is-light" :href="authURL">
                                     <strong>Log In</strong>
                                 </a>
                             </div>
@@ -60,17 +68,33 @@
 
 <script lang="ts">
 
+import { API_URL } from './variables'
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class App extends Vue {
     private navActive = false
+    private authURL = API_URL + "/authorize"
+    
+    get isLoggedIn() {
+        return this.$store.getters.isLoggedIn
+    }
+
+    get currentUsername() {
+        return this.$store.getters.user.profile.username
+    }
 
     navBurgerClicked(): void {
         this.navActive = !this.navActive
     }
 
-    
+    logout() {
+        this.$store.dispatch('logout')
+        .then(() => {
+            if (this.$router.currentRoute.path !== '/')
+                this.$router.push('/')
+        })
+    }
 }
 
 </script>

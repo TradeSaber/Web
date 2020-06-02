@@ -3,7 +3,7 @@
         <article v-if="showBetaWarning" class="message is-warning">
             <div class="message-header">
                 <p>Warning</p>
-                <button class="delete" aria-label="delete" @click="warningXClicked()"/>
+                <button class="delete" aria-label="delete" @click="warningCloseClicked()"/>
             </div>
             <div class="message-body">
                 Thank you for checking out TradeSaber! Currently the service as a whole is in beta so do not expect things to work 100%.
@@ -33,7 +33,7 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class Home extends Vue {
     private showBetaWarning = true
 
-    warningXClicked() {
+    warningCloseClicked() {
         this.showBetaWarning = false
     }
 }
