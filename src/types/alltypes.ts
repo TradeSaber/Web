@@ -14,60 +14,60 @@ export enum ShareSaberRole {
 }
 
 export enum Rarity {
-    Common,
-    Uncommon,
-    Rare,
-    Legendary
+    Common = 0,
+    Uncommon = 1,
+    Rare = 2,
+    Legendary = 3
 }
 
 export interface ProbabilityDatum {
-    id: string
-    probabilityboost: number
+    id: string;
+    probabilityboost: number;
 }
 
 export interface DiscordUser {
-    id: string
-    username: string
-    discriminator: string
-    avatar: string
+    id: string;
+    username: string;
+    discriminator: string;
+    avatar: string;
 }
 
 export interface User {
-    banned: boolean
-    discordid: string
-    role: ShareSaberRole
-    profile: DiscordUser
-    inventory: string[]
-    unopenedpacks: string[]
+    banned: boolean;
+    discordid: string;
+    role: ShareSaberRole;
+    profile: DiscordUser;
+    inventory: string[];
+    unopenedpacks: string[];
 }
 
 export interface Card {
-    id: string
-    series: string
-    name: string
-    description: string
-    master: string
-    maxprints: number
-    rarity: Rarity,
-    locked: boolean,
-    baseprobability: number,
-    coverurl: string
+    id: string;
+    series: string;
+    name: string;
+    description: string;
+    master: string;
+    maxprints: number;
+    rarity: Rarity;
+    locked: boolean;
+    baseprobability: number;
+    coverurl: string;
 }
 
 export interface Pack {
-    id: string
-    name: string
-    description: string
-    count: number
-    lockedcardpool: ProbabilityDatum[]
-    guaranteedcards: string[]
-    guaranteedrarities: Rarity[]
-    theme: string
-    coverurl: string
+    id: string;
+    name: string;
+    description: string;
+    count: number;
+    lockedcardpool: ProbabilityDatum[];
+    guaranteedcards: string[];
+    guaranteedrarities: Rarity[];
+    theme: string;
+    coverurl: string;
 }
 
 export interface Series {
-    id: string
-    name: string
-    description: string
+    id: string;
+    name: string;
+    description: string;
 }
