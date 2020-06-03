@@ -173,10 +173,10 @@
                         </div>
                     </div>
                     <div class="buttons">
-                        <a class="button is-danger">
+                        <a class="button is-danger" v-on:click="resetPack()">
                             Reset
                         </a>
-                        <a class="button is-success">
+                        <a class="button is-success" v-on:click="submitPack()">
                             Submit
                         </a>
                     </div>
@@ -279,33 +279,19 @@ export default class Upload extends Vue {
         this.setUploading()
 
         const formData = new FormData()
-        const card = {
-            series: this.cardSeries,
-            name: this.cardName,
-            description: this.cardDescription,
-            master: this.cardMaster,
-            maxprints: this.cardMaximum,
-            rarity: this.cardRarity,
-            locked: this.cardLocked,
-            baseprobability: this.cardProbability
-        }
-        formData.append('Card', JSON.stringify(card))
-        formData.append('Cover', this.cardImage)
-        
 
-        axios({ url: API_URL + '/cards', method: 'POST', data: {
-            card: {
-                series: this.cardSeries,
-                name: this.cardName,
-                description: this.cardDescription,
-                master: this.cardMaster,
-                maxprints: this.cardMaximum,
-                rarity: this.cardRarity,
-                locked: this.cardLocked,
-                baseprobability: this.cardProbability
-            },
-            file: this.cardImage
-        }})
+        formData.append('series', this.cardSeries)
+        formData.append('name', this.cardName)
+        formData.append('description', this.cardDescription)
+        formData.append('master', this.cardMaster)
+        formData.append('maxprints', this.cardMaximum.toString())
+        formData.append('rarity', this.cardRarity.toString())
+        formData.append('locked', this.cardLocked ? 'true' : 'false')
+        formData.append('baseprobability', this.cardProbability.toString())
+        formData.append('cover', this.cardImage)
+
+        axios({ url: API_URL + '/cards', method: 'POST', data: formData
+        })
         .then(() => {
             this.setReady('Upload Successful')
             this.resetCard()
@@ -328,20 +314,43 @@ export default class Upload extends Vue {
         this.packCount = 5
         this.packCards = ''
         this.packTheme = ''
+        this.packRarities = ''
         this.packImage = null
         this.packImageName = 'Choose a file...'
     }
 
     submitPack() {
         this.setUploading()
+
+        const formData = new FormData()
+
+        formData.append('name', this.packName)
+        formData.append('description', this.packDescription)
+        formData.append('lockedcardpool', this.packProbabilityData)
+        formData.append('count', this.packCount.toString())
+        if (this.packCards !== '')
+            formData.append('guaranteedcards', this.packCards.split(',').toString())
+        if (this.packRarities !== '')
+            formData.append('guaranteedrarities', this.packRarities.split(',').toString())
+        formData.append('theme', this.packTheme)
+        formData.append('cover', this.packImage)
+
+        axios({ url: API_URL + '/packs', method: 'POST', data: formData
+        })
+        .then(() => {
+            this.setReady('Upload Successful')
+            this.resetPack()
+        })
+        .catch(err => {
+            console.log(err)
+            this.setReady('An error has occured while submitting the new pack')
+        })
     }
 
     setUploading() {
         this.modalActive = true
         this.modalComplete = false
         this.modalText = 'Uploading...'
-
-        this.setReady('Upload Successful')
     }
 
     setReady(text: string) {
