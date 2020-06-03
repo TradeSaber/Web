@@ -326,12 +326,10 @@ export default class Upload extends Vue {
 
         formData.append('name', this.packName)
         formData.append('description', this.packDescription)
-        formData.append('lockedcardpool', this.packProbabilityData)
+        formData.append('probData', this.packProbabilityData === '' ? '[]' : this.packProbabilityData)
         formData.append('count', this.packCount.toString())
-        if (this.packCards !== '')
-            formData.append('guaranteedcards', this.packCards.split(',').toString())
-        if (this.packRarities !== '')
-            formData.append('guaranteedrarities', this.packRarities.split(',').toString())
+        formData.append('cardData', this.packCards === '' ? '[]' : JSON.stringify(this.packCards.split(',')))
+        formData.append('rarityData', this.packRarities === '' ? '[]' : JSON.stringify(this.packRarities.split(',')))
         formData.append('theme', this.packTheme)
         formData.append('cover', this.packImage)
 
