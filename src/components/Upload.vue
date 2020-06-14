@@ -290,8 +290,7 @@ export default class Upload extends Vue {
         formData.append('baseprobability', this.cardProbability.toString())
         formData.append('cover', this.cardImage)
 
-        axios({ url: API_URL + '/cards', method: 'POST', data: formData
-        })
+        axios({ url: API_URL + '/cards', method: 'POST', data: formData })
         .then(() => {
             this.setReady('Upload Successful')
             this.resetCard()
@@ -333,8 +332,7 @@ export default class Upload extends Vue {
         formData.append('theme', this.packTheme)
         formData.append('cover', this.packImage)
 
-        axios({ url: API_URL + '/packs', method: 'POST', data: formData
-        })
+        axios({ url: API_URL + '/packs', method: 'POST', data: formData })
         .then(() => {
             this.setReady('Upload Successful')
             this.resetPack()
