@@ -82,7 +82,7 @@
                     <div class="field">
                         <label class="label">Base Probability</label>
                         <div class="control">
-                            <input class="input" type="number" placeholder=".05">
+                            <input class="input" type="number" placeholder=".05" v-model="cardProbability">
                         </div>
                     </div>
                     <div class="field">
@@ -270,7 +270,7 @@ export default class Upload extends Vue {
         this.cardMaximum = -1
         this.cardRarity = Rarity.Common
         this.cardLocked = false
-        this.cardProbability = .05
+        this.cardProbability = 0.05
         this.cardImage = null
         this.cardImageName = 'Choose a file...'
     }

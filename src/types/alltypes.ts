@@ -51,7 +51,7 @@ export interface Card {
     rarity: Rarity;
     locked: boolean;
     baseprobability: number;
-    coverurl: string;
+    coverURL: string;
 }
 
 export interface Pack {
