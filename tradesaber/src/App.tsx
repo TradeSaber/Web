@@ -1,15 +1,12 @@
 import React from 'react';
+import TradeNav from './components/TradeNav';
 
 function App() {
-  return (
-    <div>
-      <header>
-        <p>
-          We are back? Back from where?
-        </p>
-      </header>
-    </div>
-  );
+    return (
+        <div>
+            <TradeNav />
+        </div>
+    );
 }
 
 export default App;
