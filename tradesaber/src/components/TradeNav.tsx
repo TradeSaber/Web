@@ -50,4 +50,4 @@ function TradeNav() {
     )
 }
 
-export default TradeNav;
+export default TradeNav
