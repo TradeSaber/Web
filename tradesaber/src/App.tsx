@@ -1,6 +1,8 @@
 import React from 'react'
+import { Section } from 'react-bulma-components'
 import { Switch, Route, useLocation } from 'react-router-dom'
 import Login from './components/Login'
+import NotLoggedIn from './components/NotLoggedIn'
 import TradeNav from './components/TradeNav'
 
 function useQuery() {
@@ -14,11 +16,16 @@ function App() {
     return (
         <div>
             <TradeNav />
-            <Switch>
-                <Route path="/login">
-                    <Login code={query.get('code')} />
-                </Route>
-            </Switch>
+            <Section>
+                <Switch>
+                    <Route path="/login">
+                        <Login code={query.get('code')} />
+                    </Route>
+                    <Route path="/profile">
+                        <NotLoggedIn />
+                    </Route>
+                </Switch>
+            </Section>
         </div>
     )
 }
