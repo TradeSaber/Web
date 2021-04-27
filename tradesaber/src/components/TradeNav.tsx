@@ -14,7 +14,7 @@ function EndBar({ user }: EndBarProps) {
     
     if (user !== null) {
         return (
-            <Navbar.Item href="#">
+            <Navbar.Item renderAs={Link} to="/profile">
                 <b>{user.profile.username}</b>
             </Navbar.Item>
         )
