@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { Container, Navbar } from 'react-bulma-components'
+import { Link } from 'react-router-dom'
 import smallLongLogo from '../assets/logo-long-small.png'
 import useToken from '../data/useToken'
 import useUser from '../data/useUser'
@@ -13,11 +14,9 @@ function EndBar({ user }: EndBarProps) {
     
     if (user !== null) {
         return (
-            <>
-                <Navbar.Item href="#">
-                    <b>{user.profile.username}</b>
-                </Navbar.Item>
-            </>
+            <Navbar.Item href="#">
+                <b>{user.profile.username}</b>
+            </Navbar.Item>
         )
     }
     return (<></>)
@@ -36,13 +35,13 @@ function TradeNav() {
         <Navbar color="primary">
             <Container>
                 <Navbar.Brand>
-                    <Navbar.Item renderAs="a" href="#">
-                        <img src={smallLongLogo} alt="Trade Saber Logo"  />
+                    <Navbar.Item renderAs="a">
+                        <img src={smallLongLogo} alt="Trade Saber Logo" />
                     </Navbar.Item>
                 </Navbar.Brand>
                 <Navbar.Menu>
                     <Navbar.Container>
-                        <Navbar.Item hoverable href="#">
+                        <Navbar.Item renderAs={Link} to="/" hoverable>
                             Home
                         </Navbar.Item>
                         <Navbar.Item dropdown hoverable href="#">
