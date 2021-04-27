@@ -1,6 +1,6 @@
-import { Settings } from 'node:http2';
-import DiscordUser from './discordUser'
-import Role from './Role';
+import DiscordUser from './DiscordUser'
+import Settings from './Settings'
+import Role from './Role'
 
 export default interface User {
     id: string

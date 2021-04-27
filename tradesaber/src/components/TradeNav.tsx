@@ -5,9 +5,10 @@ import smallLongLogo from '../assets/logo-long-small.png'
 import useToken from '../data/useToken'
 import useUser from '../data/useUser'
 import { TRADESABER_API_URL } from '../env'
+import User from '../models/User'
 
 interface EndBarProps {
-    user: any
+    user: User
 }
 
 function EndBar({ user }: EndBarProps) {
