@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom'
 import useToken from '../data/useToken'
 import fetchToken from '../data/useTokenFetch'
 import useUser from '../data/useUser'
+import Loading from './Loading'
 
 interface LoginProps {
     code: string | null
@@ -33,9 +34,7 @@ export default function Login({ code } : LoginProps) {
 
     if (loading) {
         return (
-            <div>
-                <p>Loading...</p>
-            </div>
+            <Loading />
         )
     }
     else {
@@ -45,9 +44,7 @@ export default function Login({ code } : LoginProps) {
             )
         } else {
             return (
-                <div>
-                    <p>An error has occured.</p>
-                </div>
+                <Loading />
             )
         }
     }
