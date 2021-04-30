@@ -1,9 +1,10 @@
 import React from 'react'
-import { Section } from 'react-bulma-components'
+import { Container, Section } from 'react-bulma-components'
 import { Switch, Route, useLocation } from 'react-router-dom'
 import Login from './components/Login'
 import TradeNav from './components/TradeNav'
 import TradeRoute from './custom/TradeRoute'
+import Profile from './pages/Profile'
 
 function useQuery() {
     return new URLSearchParams(useLocation().search)
@@ -17,14 +18,16 @@ function App() {
         <div>
             <TradeNav />
             <Section>
-                <Switch>
-                    <Route path="/login">
-                        <Login code={query.get('code')} />
-                    </Route>
-                    <TradeRoute path="/profile">
-                        <p>uwu we authed</p>
-                    </TradeRoute>
-                </Switch>
+                <Container>
+                    <Switch>
+                        <Route path="/login">
+                            <Login code={query.get('code')} />
+                        </Route>
+                        <TradeRoute path="/profile">
+                            <Profile />
+                        </TradeRoute>
+                    </Switch>
+                </Container>
             </Section>
         </div>
     )
