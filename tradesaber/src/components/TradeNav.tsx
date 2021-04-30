@@ -45,7 +45,7 @@ function TradeNav() {
                         <Navbar.Item renderAs={Link} to="/" hoverable>
                             Home
                         </Navbar.Item>
-                        <Navbar.Item dropdown hoverable href="#">
+                        <Navbar.Item hoverable href="#">
                             <Navbar.Link arrowless={false}>
                                 Collections
                             </Navbar.Link>
@@ -68,7 +68,7 @@ function TradeNav() {
                             FAQ
                         </Navbar.Item>
                     </Navbar.Container>
-                    <Navbar.Container position="end">
+                    <Navbar.Container align="right">
                         <EndBar user={user} />
                         <Navbar.Item href="#" onClick={() => {
                             if (user !== null) {

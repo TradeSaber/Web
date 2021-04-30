@@ -4,6 +4,7 @@ import { Switch, Route, useLocation } from 'react-router-dom'
 import Login from './components/Login'
 import TradeNav from './components/TradeNav'
 import TradeRoute from './custom/TradeRoute'
+import Admin from './pages/Admin'
 import Profile from './pages/Profile'
 
 function useQuery() {
@@ -25,6 +26,9 @@ function App() {
                         </Route>
                         <TradeRoute path="/profile">
                             <Profile />
+                        </TradeRoute>
+                        <TradeRoute path="/admin">
+                            <Admin />
                         </TradeRoute>
                     </Switch>
                 </Container>
