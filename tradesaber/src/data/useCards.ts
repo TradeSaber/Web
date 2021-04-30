@@ -8,7 +8,7 @@ export default function useCards() {
 
     return {
         loading,
-        series: data as Card[] ?? null,
+        cards: data as Card[] ?? null,
         mutate
     }
 }
