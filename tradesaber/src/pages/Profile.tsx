@@ -1,13 +1,14 @@
+import useAllSeries from '../data/useAllSeries'
 import useInventory from '../data/useInventory'
 import useUser from '../data/useUser'
 
 function Profile() {
     const { user } = useUser()
+    const { series } = useAllSeries()
     const { inventory } = useInventory(user, true)
     
-    console.log(inventory)
     return (
-        <>{inventory?.id}</>
+        <>{inventory?.id}<br />{series?.length}</>
     )
 }
 

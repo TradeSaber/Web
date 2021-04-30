@@ -14,7 +14,6 @@ interface EndBarProps {
 function EndBar({ user }: EndBarProps) {
     
     if (user !== null) {
-        console.log(user)
         return (
             <Navbar.Item renderAs={Link} to="/profile">
                 <b>{user.profile.username}</b>
