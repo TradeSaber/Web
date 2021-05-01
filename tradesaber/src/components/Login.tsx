@@ -10,7 +10,7 @@ interface LoginProps {
     code: string | null
 }
 
-export default function Login({ code } : LoginProps) {
+export default function Login({ code }: LoginProps) {
     
     const { user, mutate } = useUser()
     const { token: tV, setToken } = useToken()
