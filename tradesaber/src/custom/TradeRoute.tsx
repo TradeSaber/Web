@@ -21,7 +21,7 @@ function TradeRoute({ children, scopes, path }: IProps) {
 
         if (user.role === null)
             return false
-        console.log(user)        
+                  
         if (scopes !== undefined) {
             let didFind = false
             scopes.forEach(element => {
