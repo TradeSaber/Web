@@ -27,7 +27,7 @@ function App() {
                         <TradeRoute path="/profile">
                             <Profile />
                         </TradeRoute>
-                        <TradeRoute path="/admin">
+                        <TradeRoute path="/admin" scopes={['create:series']}>
                             <Admin />
                         </TradeRoute>
                     </Switch>
