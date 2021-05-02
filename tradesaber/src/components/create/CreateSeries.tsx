@@ -1,24 +1,22 @@
+import Media from '../../models/Media'
 import React, { useState } from 'react'
-import { Button, Form, Modal } from 'react-bulma-components'
-import useAllSeries from '../../data/useAllSeries'
-import ColorTheme from '../../models/ColorTheme'
-import User from '../../models/User'
 import ThemePicker from '../ThemePicker'
+import ColorTheme from '../../models/ColorTheme'
+import useAllSeries from '../../data/useAllSeries'
+import uploadMedia from '../../lib/create/uploadMedia'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { Button, Form, Modal, Progress } from 'react-bulma-components'
+import createSeries from '../../lib/create/createSeries'
 
-interface CreateSeriesProps {
-    uploader: User
-}
-
-export default function CreateSeries({ uploader }: CreateSeriesProps) {
+export default function CreateSeries() {
 
     const colorTheme: ColorTheme = { 
         main: '#000000',
-        highlight: '#000000'
+        highlight: null
     }
     
-    const { series } = useAllSeries()
+    const { series, mutate } = useAllSeries()
     const [name, setName] = useState('')
     const [open, setOpen] = useState(false)
     const [theme, setTheme] = useState(colorTheme)
@@ -26,10 +24,15 @@ export default function CreateSeries({ uploader }: CreateSeriesProps) {
     const [description, setDescription] = useState('')
     const [validNameText, setValidNameText] = useState('')
     const [validDescription, setValidDescription] = useState(true)
-    const [uploadedIcon, setUploadedIcon] = useState<FileList | undefined>()
-    const [uploadedBanner, setUploadedBanner] = useState<FileList | undefined>()
     const [iconName, setIconName] = useState<string | undefined>(undefined)
+    const [uploadingIcon, setUploadingIcon] = useState<FileList | undefined>()
     const [bannerName, setBannerName] = useState<string | undefined>(undefined)
+    const [uploadingBanner, setUploadingBanner] = useState<FileList | undefined>()
+
+    const [progress, setProgress] = useState(0)
+    const [uploading, setUploading] = useState(false)
+    const [progressText, setProgressText] = useState('')
+    const [showUploading, setShowUploading] = useState(false)
 
     function NameHelp() {
         if (!validName)
@@ -45,16 +48,82 @@ export default function CreateSeries({ uploader }: CreateSeriesProps) {
 
     function reset() {
         setName('')
-        setOpen(true)
-        setTheme(colorTheme)
-        setValidName(true)
-        setDescription('')
-        setValidNameText('')
-        setValidDescription(true)
-        setUploadedIcon(undefined)
-        setUploadedBanner(undefined)
+        setProgress(0)
         setIconName('')
         setBannerName('')
+        setValidName(true)
+        setDescription('')
+        setProgressText('')
+        setUploading(false)
+        setTheme(colorTheme)
+        setValidNameText('')
+        setValidDescription(true)
+        setUploadingIcon(undefined)
+        setUploadingBanner(undefined)
+    }
+
+    function isValid() {
+        return validName && name !== '' && validDescription && description !== '' && theme && uploadingIcon && uploadingBanner
+    }
+
+    function updateProgress(value: number) {
+        setProgress(value)
+    }
+
+    async function upload() {
+        if (!isValid())
+            return
+
+        setOpen(false)
+        updateProgress(0)
+        setUploading(true)
+        setShowUploading(true)
+        setProgressText('Uploading Icon')
+
+        const icon = uploadingIcon?.item(0)
+        if (icon === undefined || icon === null) {
+            setUploading(false)
+            setProgressText('Invalid Icon File')
+            return
+        }
+
+        const iconResponse = await uploadMedia(icon, updateProgress)
+        if (iconResponse.status !== 200) {
+            setUploading(false)
+            setProgressText(iconResponse.statusText)
+            return
+        }
+        const uploadedIcon = iconResponse.data as Media
+
+        setProgressText('Uploading Banner')
+
+        const banner = uploadingBanner?.item(0)
+        if (banner === undefined || banner === null) {
+            setUploading(false)
+            setProgressText('Invalid Banner File')
+            return
+        }
+
+        const bannerResponse = await uploadMedia(banner, updateProgress)
+        if (bannerResponse.status !== 200) {
+            setUploading(false)
+            setProgressText(bannerResponse.statusText)
+            return
+        }
+        const uploadedBanner = bannerResponse.data as Media
+
+        if (uploadedIcon === undefined || uploadedBanner === undefined) {
+            setUploading(false)
+            setProgressText('An unknown error has occured.')
+            return
+        }
+
+        const seriesResponse = await createSeries(name, description, uploadedIcon, uploadedBanner, theme)
+        reset()
+        setProgressText(seriesResponse.status === 200 ? 'Successfully created new series!' : ('An error has occured: ' + seriesResponse?.data?.error ?? seriesResponse.statusText))
+        setUploading(false)
+        setProgress(100)
+        mutate()
     }
 
     return (
@@ -104,15 +173,15 @@ export default function CreateSeries({ uploader }: CreateSeriesProps) {
                             </Form.Field>
                             <Form.Field>
                                 <Form.Label>Icon</Form.Label>
-                                <Form.InputFile value={uploadedIcon} filename={iconName} icon={<FontAwesomeIcon icon={uploadedIcon ? faCheck : faTimes} /> } onChange={(e) => {
-                                    setUploadedIcon(e.target.files ?? undefined)
+                                <Form.InputFile filename={iconName} icon={<FontAwesomeIcon icon={uploadingIcon ? faCheck : faTimes} /> } onChange={(e) => {
+                                    setUploadingIcon(e.target.files ?? undefined)
                                     setIconName(e.target.files?.item(0)?.name)
                                 }} />
                             </Form.Field>
                             <Form.Field>
                                 <Form.Label>Banner</Form.Label>
-                                <Form.InputFile value={uploadedBanner} filename={bannerName} icon={<FontAwesomeIcon icon={uploadedBanner ? faCheck : faTimes} /> } onChange={(e) => {
-                                    setUploadedBanner(e.target.files ?? undefined)
+                                <Form.InputFile filename={bannerName} icon={<FontAwesomeIcon icon={uploadingBanner ? faCheck : faTimes} /> } onChange={(e) => {
+                                    setUploadingBanner(e.target.files ?? undefined)
                                     setBannerName(e.target.files?.item(0)?.name)
                                 }} />
                             </Form.Field>
@@ -120,8 +189,25 @@ export default function CreateSeries({ uploader }: CreateSeriesProps) {
                     </Modal.Card.Body>
                     <Modal.Card.Footer renderAs={Button.Group} align="right">
                         <Button color="danger" onClick={reset}>Reset</Button>
-                        <Button color="success" disabled={!(validName && name !== '' && validDescription && description !== '' && theme && uploadedIcon && uploadedBanner)}>Upload</Button>
+                        <Button color="success" disabled={!isValid()} onClick={upload}>Upload</Button>
                     </Modal.Card.Footer>
+                </Modal.Card>
+            </Modal>
+            <Modal show={showUploading} onClose={() => {
+                if (!uploading)
+                    setShowUploading(false)
+                    setOpen(false)
+            }}>
+                <Modal.Card>
+                    <Modal.Card.Header showClose>
+                        <Modal.Card.Title>Uploading</Modal.Card.Title>
+                    </Modal.Card.Header>
+                    <Modal.Card.Body>
+                        <div>
+                            <p>{progressText}</p>
+                            <Progress value={progress} max={100} color="primary" />
+                        </div>
+                    </Modal.Card.Body>
                 </Modal.Card>
             </Modal>
             <Button onClick={() => setOpen(true)}>New Series</Button>
