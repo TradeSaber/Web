@@ -11,7 +11,6 @@ import Media from '../../models/Media'
 import createCard from '../../lib/create/createCard'
 
 export default function CreateCard() {
-
     const { series: allSeries } = useAllSeries()
     const { rarities } = useRarities()
     const [name, setName] = useState('')

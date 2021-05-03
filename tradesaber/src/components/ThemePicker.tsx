@@ -9,8 +9,8 @@ interface ThemePickerProps {
 
 function ThemePicker({ onChange }: ThemePickerProps) {
     const colorTheme: ColorTheme = { 
-        main: '#000',
-        highlight: '#000'
+        main: '#00000',
+        highlight: null
     }
 
     const [tHighlight, setTHighlight] = useState(false)

@@ -5,7 +5,6 @@ interface RarityOptionsProps {
 }
 
 export default function RarityOptions({ rarities }: RarityOptionsProps) {
-    
     let rarityOptions: JSX.Element[] = []
     rarityOptions.push(<option key={'-- SELECT --'} value={'-- SELECT --'}>{'-- SELECT --'}</option>)
 
