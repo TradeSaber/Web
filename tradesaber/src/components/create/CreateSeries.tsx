@@ -90,7 +90,7 @@ export default function CreateSeries() {
         const iconResponse = await uploadMedia(icon, updateProgress)
         if (iconResponse.status !== 200) {
             setUploading(false)
-            setProgressText(iconResponse.statusText)
+            setProgressText(iconResponse?.data?.error ?? iconResponse.statusText)
             return
         }
         const uploadedIcon = iconResponse.data as Media
@@ -107,7 +107,7 @@ export default function CreateSeries() {
         const bannerResponse = await uploadMedia(banner, updateProgress)
         if (bannerResponse.status !== 200) {
             setUploading(false)
-            setProgressText(bannerResponse.statusText)
+            setProgressText(bannerResponse?.data?.error ?? bannerResponse.statusText)
             return
         }
         const uploadedBanner = bannerResponse.data as Media
