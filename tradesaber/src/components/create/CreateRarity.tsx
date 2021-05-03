@@ -35,7 +35,6 @@ export default function CreateRarity() {
     }
 
     async function upload() {
-
         if (!isValid() || uploading)
             return
 
