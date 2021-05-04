@@ -188,7 +188,7 @@ export default function CreateCard() {
                                 <Form.Label onClick={() => {
                                     setProbability(doProbability ? '' : '1')
                                     setDoProbability(!doProbability)
-                                }}>Maximum</Form.Label>
+                                }}>Probability</Form.Label>
                                 <Form.Control>
                                     {doProbability ? <Form.Input value={probability} onChange={(e) => setProbability(e.target.value)} /> : <></>}
                                 </Form.Control>
