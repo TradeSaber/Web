@@ -163,19 +163,20 @@ export default function CreatePack() {
                             <Form.Field kind="addons">
                                 {doCards ? <CardSearch onAdd={(e) => {
                                     if (cards.find(c => e.id === c.card.id))
-                                    return
+                                        return
                                     const newRef: CreatePackCardReference = {
                                         card: e,
                                         boost: 1,
                                         guaranteed: false
                                     }
-                                    
-                                    /* lmao */
-                                    cards.push(newRef)
-                                    setCards(cards.filter(p => true))
+                                    let newCards = cards.filter(p => true)
+                                    newCards.push(newRef)
+                                    setCards(newCards)
                                 }} /> : <></>}
                             </Form.Field>
-                            {doCards ? <MultiCardReference value={cards} onChange={setCards} /> : <></>}
+                            {doCards ? <MultiCardReference value={cards} onChange={(c) => {
+                                setCards(c)
+                            }} /> : <></>}
                         </form>
                         {status}
                     </Modal.Card.Body>

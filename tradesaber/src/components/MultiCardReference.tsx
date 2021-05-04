@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Form } from 'react-bulma-components'
 import useAllSeries from '../data/useAllSeries'
 import { CreatePackCardReference } from '../lib/create/createPack'
@@ -20,17 +20,21 @@ interface ListProps {
 
 export default function MultiCardReference({ value, onChange }: MultiCardReferenceProps) {
     const { series } = useAllSeries()
-    const [cardList, setCardList] = useState<CreatePackCardReference[]>(value)
+    const [cardList, setCardList] = useState<CreatePackCardReference[]>([])
     
+    useEffect(() => {
+        setCardList(value)
+    }, [value])
+
     function update(reference: CreatePackCardReference) {
         const index = cardList.findIndex(c => c.card.id === reference.card.id)
+        let newList = cardList
         if (index !== -1) {
             cardList[index] = reference
-            setCardList(cardList.filter(p => true))
+            newList = cardList.filter(p => true)
         }
-        
         if (onChange) {
-            onChange(cardList)
+            onChange(newList)
         }
     }
 

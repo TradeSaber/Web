@@ -47,7 +47,7 @@ export default function CardSearch({ onAdd }: CardSearchProps) {
                 </Form.Select>
             </Form.Control>
             <Form.Control>
-                <Button disabled={activeCard === ''} onClick={() => add()}>
+                <Button type="button" disabled={activeCard === ''} onClick={() => add()}>
                     Add
                 </Button>
             </Form.Control>
