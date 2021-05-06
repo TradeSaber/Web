@@ -5,6 +5,7 @@ import Login from './components/Login'
 import TradeNav from './components/TradeNav'
 import TradeRoute from './custom/TradeRoute'
 import Admin from './pages/Admin'
+import Cards from './pages/collections/Cards'
 import Profile from './pages/Profile'
 
 function useQuery() {
@@ -30,6 +31,9 @@ function App() {
                         <TradeRoute path="/admin" scopes={['create:series']}>
                             <Admin />
                         </TradeRoute>
+                        <Route path="/cards">
+                            <Cards />
+                        </Route>
                     </Switch>
                 </Container>
             </Section>

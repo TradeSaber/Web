@@ -50,7 +50,7 @@ function TradeNav() {
                                 Collections
                             </Navbar.Link>
                             <Navbar.Dropdown>
-                                <Navbar.Item href="#">
+                                <Navbar.Item renderAs={Link} to="/cards">
                                     Cards
                                 </Navbar.Item>
                                 <Navbar.Item href="#">
