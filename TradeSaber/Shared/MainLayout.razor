@@ -1,13 +1,17 @@
 ﻿@inherits LayoutComponentBase
-@using MudBlazor;
+
+@inject IURLSettings urlSettings
+@inject NavigationManager navigationManager
 
 <MudThemeProvider Theme="currentTheme" />
 
 <MudLayout>
     <MudAppBar Elevation="1">
-        <img src="/images/logo-long-small.png" height="40" />
+        <MudLink Href="/">
+            <img src="/images/logo-long-small.png" height="40" />
+        </MudLink>
         <MudAppBarSpacer />
-        <MudButton Variant="Variant.Filled">Log In</MudButton>
+        <MudButton Variant="Variant.Filled" OnClick="RedirectToLogin">Log In</MudButton>
     </MudAppBar>
     <MudMainContent>
         @Body
@@ -15,6 +19,11 @@
 </MudLayout>
 
 @code {
+
+    private void RedirectToLogin()
+    {
+        navigationManager.NavigateTo($"{urlSettings.API}/auth");
+    }
 
     MudTheme currentTheme = new MudTheme
     {

@@ -1,0 +1,44 @@
+﻿@page "/login"
+
+@inject HttpClient httpClient
+@inject IURLSettings urlSettings
+@inject ILocalUserService localUserService
+@inject NavigationManager navigationManager
+
+<h3>Login</h3>
+
+@code { 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await localUserService.SetToken(null);
+        if (!navigationManager.TryGetQueryString<string>("code", out string code))
+        {
+            navigationManager.NavigateTo("/");
+            return;
+        }
+
+        // TODO: move to auth manager?
+        HttpResponseMessage response = await httpClient.GetAsync($"{urlSettings.API}/auth/callback?code={code}");
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine(response.StatusCode);
+            navigationManager.NavigateTo("/");
+            return;
+        }
+
+        TokenResponse tokenResponse = (await System.Text.Json.JsonSerializer.DeserializeAsync<TokenResponse>(await response.Content.ReadAsStreamAsync()))!;
+        await localUserService.SetToken(tokenResponse.Token);
+
+        Console.WriteLine(tokenResponse.Token);
+        navigationManager.NavigateTo("/profile");
+        await base.OnInitializedAsync();
+    }
+
+    private class TokenResponse
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("token")]
+        public string Token { get; set; } = null!;
+    }
+}
