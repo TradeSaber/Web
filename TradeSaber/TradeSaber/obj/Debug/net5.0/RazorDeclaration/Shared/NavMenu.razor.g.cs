@@ -90,7 +90,7 @@ using TradeSaber.Shared;
         }
         #pragma warning restore 1998
 #nullable restore
-#line 28 "C:\Users\Auros\Documents\Programming\Beat Saber\Large Projects\TradeSaber\Web\TradeSaber\TradeSaber\Shared\NavMenu.razor"
+#line 18 "C:\Users\Auros\Documents\Programming\Beat Saber\Large Projects\TradeSaber\Web\TradeSaber\TradeSaber\Shared\NavMenu.razor"
        
     private bool collapseNavMenu = true;
 
