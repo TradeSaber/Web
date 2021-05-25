@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using TradeSaber.Interfaces;
 using TradeSaberSharp;
+using TradeSaberSharp.Models;
 
 namespace TradeSaber.Services
 {
@@ -10,6 +11,8 @@ namespace TradeSaber.Services
         private const string _tokenKey = "token";
         private readonly TradeSaberClient _tradeSaberClient;
         private readonly ILocalStorageService _localStorageService;
+
+        public User? ActiveUser { get; set; }
 
         public LocalUserService(TradeSaberClient tradeSaberClient, ILocalStorageService localStorageService)
         {
@@ -21,6 +24,8 @@ namespace TradeSaber.Services
         {
             string? token = await _localStorageService.GetItemAsync<string>(_tokenKey);
             _tradeSaberClient.Token = token;
+
+            ActiveUser = token is null ? null : await _tradeSaberClient.Auth.Self();
             return token;
         }
 
@@ -29,6 +34,7 @@ namespace TradeSaber.Services
             if (token is null)
             {
                 await _localStorageService.RemoveItemAsync(_tokenKey);
+                _tradeSaberClient.Token = await GetToken();
                 return;
             }
             await _localStorageService.SetItemAsync(_tokenKey, token);

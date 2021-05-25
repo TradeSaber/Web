@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 @inject IURLSettings urlSettings
+@inject TradeSaberClient tradeSaberClient
 @inject ILocalUserService localUserService
 @inject NavigationManager navigationManager
 
@@ -12,7 +13,17 @@
             <img src="/images/logo-long-small.png" height="40" />
         </MudLink>
         <MudAppBarSpacer />
-        <MudButton Variant="Variant.Filled" OnClick="RedirectToLogin">Log In</MudButton>
+        @if (localUserService.ActiveUser is not null)
+        {
+            <MudAvatar Image="@localUserService.ActiveUser.Profile.AvatarURL()" @onclick="RedirectToProfile" Class="ma-2" Size="Size.Large" title="@localUserService.ActiveUser.Profile.Username" Style="cursor: pointer;" >
+                <span></span>
+            </MudAvatar>
+            <MudButton Variant="Variant.Filled" OnClick="LogOut">Log Out</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" OnClick="RedirectToLogin">Log In</MudButton>
+        }
     </MudAppBar>
     <MudMainContent>
         @Body
@@ -23,12 +34,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await localUserService.GetToken();
+        string? token = await localUserService.GetToken();
+    }
+
+
+    private void RedirectToProfile()
+    {
+        navigationManager.NavigateTo($"/profile");
     }
 
     private void RedirectToLogin()
     {
         navigationManager.NavigateTo($"{urlSettings.API}/auth");
+    }
+
+    private async Task LogOut()
+    {
+        await localUserService.SetToken(null);
     }
 
     MudTheme currentTheme = new MudTheme

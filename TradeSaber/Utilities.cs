@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using TradeSaberSharp.Models;
 
 namespace TradeSaber
 {
@@ -41,5 +42,8 @@ namespace TradeSaber
             value = default!;
             return false;
         }
+
+        public static string AvatarURL(this DiscordUser discordUser)
+            => $"https://cdn.discordapp.com/avatars/{discordUser.ID}/{discordUser.Avatar}.png";
     }
 }
