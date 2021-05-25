@@ -15,4 +15,13 @@
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="TradeSaberSharp">
+      <HintPath>..\..\TradeSaberSharp\TradeSaberSharp\bin\Debug\netstandard2.0\TradeSaberSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="TradeSaberSharp.Core">
+      <HintPath>..\..\TradeSaberSharp\TradeSaberSharp.Core\bin\Debug\net5.0\TradeSaberSharp.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

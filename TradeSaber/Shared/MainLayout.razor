@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 @inject IURLSettings urlSettings
+@inject ILocalUserService localUserService
 @inject NavigationManager navigationManager
 
 <MudThemeProvider Theme="currentTheme" />
@@ -19,6 +20,11 @@
 </MudLayout>
 
 @code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await localUserService.GetToken();
+    }
 
     private void RedirectToLogin()
     {
