@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using System;
 using System.Threading.Tasks;
 using TradeSaber.Interfaces;
 using TradeSaberSharp;
@@ -14,6 +15,8 @@ namespace TradeSaber.Services
 
         public User? ActiveUser { get; set; }
 
+        public Action? OnUpdate { get; set; }
+
         public LocalUserService(TradeSaberClient tradeSaberClient, ILocalStorageService localStorageService)
         {
             _tradeSaberClient = tradeSaberClient;
@@ -26,6 +29,8 @@ namespace TradeSaber.Services
             _tradeSaberClient.Token = token;
 
             ActiveUser = token is null ? null : await _tradeSaberClient.Auth.Self();
+            OnUpdate?.Invoke();
+
             return token;
         }
 

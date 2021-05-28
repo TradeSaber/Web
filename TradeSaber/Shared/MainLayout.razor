@@ -6,8 +6,10 @@
 @inject NavigationManager navigationManager
 
 <MudThemeProvider Theme="currentTheme" />
+<MudSnackbarProvider />
+<MudDialogProvider />
 
-<MudLayout>
+<MudLayout Class="pa-4">
     <MudAppBar Elevation="1">
         <MudLink Href="/">
             <img src="/images/logo-long-small.png" height="40" />
@@ -15,37 +17,32 @@
         <MudAppBarSpacer />
         @if (localUserService.ActiveUser is not null)
         {
-            <MudAvatar Image="@localUserService.ActiveUser.Profile.AvatarURL()" @onclick="RedirectToProfile" Class="ma-2" Size="Size.Large" title="@localUserService.ActiveUser.Profile.Username" Style="cursor: pointer;" >
-                <span></span>
-            </MudAvatar>
-            <MudButton Variant="Variant.Filled" OnClick="LogOut">Log Out</MudButton>
+            <MudAvatar Image="@localUserService.ActiveUser.Profile.AvatarURL()" @onclick="@(() => navigationManager.NavigateTo("/profile"))" Class="ma-2" Size="Size.Large" title="@localUserService.ActiveUser.Profile.Username" Style="cursor: pointer;" />
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                @if (localUserService.ActiveUser.Role?.Scopes.Contains("upload:file") ?? false)
+                {
+                    <MudButton OnClick=@(() => navigationManager.NavigateTo("/admin"))>Admin</MudButton>
+                }
+                <MudButton OnClick="LogOut">Log Out</MudButton>
+            </MudButtonGroup>
         }
         else
         {
-            <MudButton Variant="Variant.Filled" OnClick="RedirectToLogin">Log In</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => navigationManager.NavigateTo($"{urlSettings.API}/auth"))">Log In</MudButton>
         }
     </MudAppBar>
     <MudMainContent>
-        @Body
+        <MudContainer>
+            @Body
+        </MudContainer>
     </MudMainContent>
 </MudLayout>
 
-@code {
+@code { 
 
     protected override async Task OnInitializedAsync()
     {
-        string? token = await localUserService.GetToken();
-    }
-
-
-    private void RedirectToProfile()
-    {
-        navigationManager.NavigateTo($"/profile");
-    }
-
-    private void RedirectToLogin()
-    {
-        navigationManager.NavigateTo($"{urlSettings.API}/auth");
+        await localUserService.GetToken();
     }
 
     private async Task LogOut()
@@ -78,7 +75,8 @@
             LinesInputs = "rgba(255,255,255, 0.3)",
             TextDisabled = "rgba(255,255,255, 0.2)",
 
-            Primary = "#ff8787"
+            Primary = "#ff8787",
+            Secondary = "#4481C4"
         }
     };
 }

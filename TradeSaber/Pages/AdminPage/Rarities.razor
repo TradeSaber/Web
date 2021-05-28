@@ -1,0 +1,147 @@
+﻿@page "/admin/rarities"
+
+@inject ISnackbar snackbar
+@inject TradeSaberClient tradeSaberClient
+@inject ILocalUserService localUserService
+
+<MudCard Class="ma-1">
+    <MudCardContent>
+        <MudText Typo="Typo.h4">Create</MudText>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="rarityName" T="string" Label="Name" Required="true" RequiredError="Rarity name is required!" Validation="@(new Func<string, IEnumerable<string>>(ValidateRarityName))" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudNumericField @bind-Value="probability" T="float" Label="Probability" Adornment="Adornment.End" AdornmentText="%" Min="0" Max="100" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="color" T="string" Label="Color" Required="true" Adornment="Adornment.Start" AdornmentText="#" RequiredError="Color is required!" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12" Class="pa-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ResetForm">Reset</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Upload" Disabled="@(!success)">Submit</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudCardContent>
+</MudCard>
+<MudCard Class="ma-1">
+    <MudCardContent>
+        <MudText Typo="Typo.h4">Edit</MudText>
+        <MudForm @ref="form" @bind-IsValid="@editSuccess">
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudAutocomplete @bind-Value="EditRarity" T="Rarity" Label="Rarity" Required="true" RequiredError="Rarity is required" Validation="@(new Func<string, IEnumerable<string>>(ValidateRarityName))" ResetValueOnEmptyText="true" SearchFunc="@FilterRarities" Immediate="true" ToStringFunc="@(r => r?.Name)"  />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudNumericField @bind-Value="editProbability" T="float" Label="Probability" Adornment="Adornment.End" AdornmentText="%" Min="0" Max="100" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="editColor" T="string" Label="Color" Required="true" Adornment="Adornment.Start" AdornmentText="#" RequiredError="Color is required!" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12" Class="pa-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ResetEdit">Reset</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Edit" Disabled="@(!editSuccess)">Submit</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    private bool success;
+    private bool editSuccess;
+    private MudForm form = null!;
+
+    private float probability;
+    private string color = string.Empty;
+    private string rarityName = string.Empty;
+
+    private float editProbability;
+    private string editColor = string.Empty;
+    private Rarity? _editRarity;
+    private Rarity? EditRarity
+    {
+        get => _editRarity;
+        set
+        {
+            _editRarity = value;
+            editProbability = value?.Probability * 100f ?? default;
+            editColor = value?.Color.Replace("#", string.Empty) ?? string.Empty;
+        }
+    }
+
+    private IEnumerable<Rarity>? CurrentRarities { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentRarities = await tradeSaberClient.Rarities.AllRarities();
+    }
+
+    private IEnumerable<string> ValidateRarityName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            yield return "Rarity name is required!";
+            yield break;
+        }
+        if (CurrentRarities?.Any(cr => cr.Name.ToLowerInvariant() == input.ToLowerInvariant()) ?? false)
+            yield return "Rarity already exists.";
+    }
+
+    private Task<IEnumerable<Rarity>> FilterRarities(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return Task.FromResult(CurrentRarities ?? Array.Empty<Rarity>());
+        return Task.FromResult(CurrentRarities?.Where(cr => cr.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase)) ?? Array.Empty<Rarity>());
+
+    }
+
+    private async Task Upload()
+    {
+        Rarity? rarity = await tradeSaberClient.Rarities.CreateRarity(rarityName, $"#{color}", probability / 100f);
+        if (rarity is null)
+        {
+            snackbar.Add("Rarity could not be created.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add($"Successfully created new rarity '{rarity.Name}'", Severity.Success);
+            ResetForm();
+
+            CurrentRarities = await tradeSaberClient.Rarities.AllRarities();
+        }
+    }
+
+    private void ResetForm()
+    {
+        rarityName = string.Empty;
+        probability = default;
+        color = string.Empty;
+        form.Reset();
+    }
+
+    private void ResetEdit()
+    {
+        EditRarity = null;
+        form.Reset();
+    }
+
+    private async Task Edit()
+    {
+        Rarity? rarity = await tradeSaberClient.Rarities.EditRarity(EditRarity!, $"#{editColor}", editProbability / 100f);
+        if (rarity is null)
+        {
+            snackbar.Add("Rarity could not be edited.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add($"Successfully updated rarity '{rarity.Name}'", Severity.Success);
+            ResetEdit();
+
+            CurrentRarities = await tradeSaberClient.Rarities.AllRarities();
+        }
+    }
+}
