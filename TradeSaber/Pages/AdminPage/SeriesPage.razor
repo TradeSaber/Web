@@ -1,0 +1,136 @@
+﻿@page "/admin/series"
+
+@inject ISnackbar snackbar
+@inject TradeSaberClient tradeSaberClient
+@inject ILocalUserService localUserService
+
+<MudCard Class="ma-1">
+    <MudCardContent>
+        <MudText Typo="Typo.h4">Create</MudText>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="seriesName" T="string" Label="Name" Required="true" RequiredError="Series name is required!" Validation="@(new Func<string, IEnumerable<string>>(ValidateSeriesName))" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="mainColor" T="string" Label="Main Color" Required="true" Adornment="Adornment.Start" AdornmentText="#" RequiredError="Main Color is required!" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField @bind-Value="subColor" T="string" Label="Sub Color" Required="false" Adornment="Adornment.Start" AdornmentText="#" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12">
+                    <MudTextField @bind-Value="seriesDescription" T="string" Label="Description" Required="true" Variant="Variant.Text" Lines="3" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12">
+                    <InputFile id="iconFileInput" OnChange="IconFileChanged" hidden accept=".jpg, .jpeg, .png" />
+                    <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.Star" for="iconFileInput">@(iconFile?.Name ?? "Upload Icon")</MudButton>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12">
+                    <InputFile id="bannerFileInput" OnChange="BannerFileChanged" hidden accept=".jpg, .jpeg, .png" />
+                    <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.CalendarViewDay" for="bannerFileInput">@(bannerFile?.Name ?? "Upload Banner")</MudButton>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12" Class="pa-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ResetForm" Disabled="@uploading">Reset</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Upload" Disabled="@(!(success && filesValid && !uploading))">Submit</MudButton>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12" Class="pa-4" hidden="@(!uploading)">
+                    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    private bool success;
+    private bool filesValid;
+    private MudForm form = null!;
+
+    private string seriesName = string.Empty;
+    private string seriesDescription = string.Empty;
+    private string mainColor = string.Empty;
+    private string subColor = string.Empty;
+
+    private IBrowserFile? iconFile;
+    private IBrowserFile? bannerFile;
+    private bool uploading;
+
+    private IEnumerable<Series>? CurrentSeries { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentSeries = await tradeSaberClient.Series.AllSeries();
+    }
+
+    private IEnumerable<string> ValidateSeriesName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            yield return "Series name is required!";
+            yield break;
+        }
+        if (CurrentSeries?.Any(s => s.Name.ToLowerInvariant() == input.ToLowerInvariant()) ?? false)
+            yield return "Series already exists.";
+    }
+
+    private void IconFileChanged(InputFileChangeEventArgs e)
+    {
+        iconFile = e.File;
+        filesValid = iconFile is not null && bannerFile is not null;
+    }
+
+    private void BannerFileChanged(InputFileChangeEventArgs e)
+    {
+        bannerFile = e.File;
+        filesValid = iconFile is not null && bannerFile is not null;
+    }
+
+    private void ResetForm()
+    {
+        seriesName = string.Empty;
+        seriesDescription = string.Empty;
+        mainColor = string.Empty;
+        subColor = string.Empty;
+        filesValid = false;
+        bannerFile = null;
+        iconFile = null;
+        form.Reset();
+    }
+
+    private async Task Upload()
+    {
+        uploading = true;
+        Media? iconMedia = await tradeSaberClient.Media.UploadFile(iconFile!.OpenReadStream(), iconFile!.Name);
+        if (iconMedia is null)
+        {
+            snackbar.Add("Icon could not be uploaded.", Severity.Error);
+            uploading = false;
+            return;
+        }
+        Media? bannerMedia = await tradeSaberClient.Media.UploadFile(bannerFile!.OpenReadStream(), bannerFile!.Name);
+        if (bannerMedia is null)
+        {
+            snackbar.Add("Banner could not be uploaded.", Severity.Error);
+            uploading = false;
+            return;
+        }
+        Series? series = await tradeSaberClient.Series.CreateSeries(seriesName, seriesDescription, iconMedia, bannerMedia, new ColorTheme
+        {
+            Main = mainColor,
+            Highlight = string.IsNullOrWhiteSpace(subColor) ? null : subColor
+        });
+        if (series is null)
+        {
+            snackbar.Add("Series could not be created.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add($"Succesfully created new series '{series.Name}'", Severity.Success);
+            ResetForm();
+
+            CurrentSeries = await tradeSaberClient.Series.AllSeries();
+        }
+        uploading = false;
+    }
+}

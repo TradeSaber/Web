@@ -32,7 +32,7 @@
         <MudForm @ref="form" @bind-IsValid="@editSuccess">
             <MudGrid>
                 <MudItem xs="12" sm="6" md="4">
-                    <MudAutocomplete @bind-Value="EditRarity" T="Rarity" Label="Rarity" Required="true" RequiredError="Rarity is required" Validation="@(new Func<string, IEnumerable<string>>(ValidateRarityName))" ResetValueOnEmptyText="true" SearchFunc="@FilterRarities" Immediate="true" ToStringFunc="@(r => r?.Name)"  />
+                    <MudAutocomplete @bind-Value="EditRarity" T="Rarity" Label="Rarity" Required="true" RequiredError="Rarity is required" Validation="@(new Func<string, IEnumerable<string>>(ValidateRarityName))" ResetValueOnEmptyText="true" SearchFunc="@FilterRarities" Immediate="true" ToStringFunc="@(r => r?.Name)" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
                     <MudNumericField @bind-Value="editProbability" T="float" Label="Probability" Adornment="Adornment.End" AdornmentText="%" Min="0" Max="100" Immediate="true" />

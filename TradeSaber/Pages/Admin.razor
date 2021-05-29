@@ -3,13 +3,13 @@
 @inject NavigationManager navigationManager
 @attribute [Authorize(Scopes.UploadFile)]
 
-<MudCard>
+<MudCard> 
     <MudCardContent>
         <MudText Typo="Typo.h4">Manage</MudText>
     </MudCardContent>
     <MudCardActions>
         <MudButton Class="ma-1" Variant="Variant.Filled" OnClick="@(() => navigationManager.NavigateTo("/admin/rarities"))">Rarities</MudButton>
-        <MudButton Class="ma-1" Variant="Variant.Filled">Series</MudButton>
+        <MudButton Class="ma-1" Variant="Variant.Filled" OnClick="@(() => navigationManager.NavigateTo("/admin/series"))">Series</MudButton>
         <MudButton Class="ma-1" Variant="Variant.Filled">Cards</MudButton>
         <MudButton Class="ma-1" Variant="Variant.Filled">Packs</MudButton>
     </MudCardActions>

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace TradeSaber.Authorization
@@ -16,7 +15,6 @@ namespace TradeSaber.Authorization
                     return Task.CompletedTask;
                 }
             }
-
             return Task.CompletedTask;
         }
     }
