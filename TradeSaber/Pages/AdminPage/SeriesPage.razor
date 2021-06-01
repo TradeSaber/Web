@@ -4,6 +4,9 @@
 @inject TradeSaberClient tradeSaberClient
 @inject ILocalUserService localUserService
 
+@attribute [Authorize(Scopes.UploadFile)]
+@attribute [Authorize(Scopes.CreateSeries)]
+
 <MudCard Class="ma-1">
     <MudCardContent>
         <MudText Typo="Typo.h4">Create</MudText>

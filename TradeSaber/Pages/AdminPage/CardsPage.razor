@@ -1,0 +1,135 @@
+﻿@page "/admin/cards"
+
+@inject ISnackbar snackbar
+@inject TradeSaberClient tradeSaberClient
+@inject ILocalUserService localUserService
+
+@attribute [Authorize(Scopes.UploadFile)]
+
+<AuthorizeView Policy="@Scopes.CreateCard">
+    <MudCard Class="ma-1">
+        <MudCardContent>
+            <MudText Typo="Typo.h4">Create</MudText>
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudTextField @bind-Value="name" T="string" Label="Name" Required="true" Immediate="true" RequiredError="Card name is required!" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudTextField @bind-Value="description" T="string" Label="Description" Required="true" Immediate="true" Variant="Variant.Text" Lines="3" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudAutocomplete @bind-Value="rarity" T="Rarity" Label="Rarity" Required="true" Immediate="true" RequiredError="Rarity is required!" ResetValueOnEmptyText="true" SearchFunc="@FilterRarities" ToStringFunc="@(r => r?.Name)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudAutocomplete @bind-Value="series" T="Series" Label="Series" Required="true" Immediate="true" RequiredError="Series is required!" ResetValueOnEmptyText="true" SearchFunc="@FilterSeries" ToStringFunc="@(s => s?.Name)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudNumericField @bind-Value="maximum" T="int?" Label="Maximum" Required="false" Immediate="true" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudNumericField @bind-Value="value" T="float?" Label="Value" Required="false" Immediate="true" Adornment="Adornment.Start" AdornmentText="T" AdornmentColor="Color.Primary" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudNumericField @bind-Value="probability" T="float?" Label="Probability" Required="false" Immediate="true" Adornment="Adornment.End" AdornmentText="%" Min="0" Max="100" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudCheckBox @bind-Checked="@_public" T="bool" Label="Public" Required="false" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12">
+                        <InputFile id="baseFileInput" OnChange="BaseImageChanged" hidden accept=".jpg, .jpeg, .png" />
+                        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.CalendarViewDay" for="baseFileInput">@(baseFile?.Name ?? "Upload Base Image")</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12" Class="pa-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ResetForm" Disabled="@uploading">Reset</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="UploadCard" Disabled="@(!(success && baseFile != null && !uploading))">Submit</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12" Class="pa-4" hidden="@(!uploading)">
+                        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudCardContent>
+    </MudCard>
+</AuthorizeView>
+
+@code {
+
+    private bool success = false;
+    private MudForm form = null!;
+    private bool uploading = false;
+
+    // Form Properties
+    private string name = string.Empty;
+    private string description = string.Empty;
+    private Rarity? rarity = null;
+    private Series? series = null;
+    private int? maximum = null;
+    private float? value = null;
+    private float? probability = null;
+    private bool _public = true;
+    private IBrowserFile? baseFile = null;
+
+    private IEnumerable<Rarity>? CurrentRarities { get; set; }
+    private IEnumerable<Series>? CurrentSeries { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentRarities = await tradeSaberClient.Rarities.AllRarities();
+        CurrentSeries = await tradeSaberClient.Series.AllSeries();
+    }
+
+    private Task<IEnumerable<Rarity>> FilterRarities(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return Task.FromResult(CurrentRarities ?? Array.Empty<Rarity>());
+        return Task.FromResult(CurrentRarities?.Where(cr => cr.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase)) ?? Array.Empty<Rarity>());
+    }
+
+    private Task<IEnumerable<Series>> FilterSeries(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return Task.FromResult(CurrentSeries ?? Array.Empty<Series>());
+        return Task.FromResult(CurrentSeries?.Where(cr => cr.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase)) ?? Array.Empty<Series>());
+    }
+
+    private void BaseImageChanged(InputFileChangeEventArgs e)
+        => baseFile = e.File;
+
+    private async Task UploadCard()
+    {
+        uploading = true;
+        Media? baseMedia = await tradeSaberClient.Media.UploadFile(baseFile!.OpenReadStream(), baseFile!.Name);
+        if (baseMedia is null)
+        {
+            snackbar.Add("Base image could not be uploaded.", Severity.Error);
+            uploading = false;
+            return;
+        }
+        Card? card = await tradeSaberClient.Cards.CreateCard(name, description, rarity!, series!, baseMedia, _public, maximum, value, probability);
+        if (card is null)
+        {
+            snackbar.Add("Card could not be created.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add($"Successfully created new card '{card.Name}' [{series!.Name}]", Severity.Success);
+            ResetForm();
+        }
+        uploading = false;
+    }
+
+    private void ResetForm()
+    {
+        name = string.Empty;
+        description = string.Empty;
+        rarity = null;
+        series = null;
+        maximum = null;
+        value = null;
+        probability = null;
+        _public = true;
+        baseFile = null;
+        form.Reset();
+    }
+}
