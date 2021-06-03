@@ -1,0 +1,190 @@
+﻿@page "/admin/packs"
+
+@inject ISnackbar snackbar
+@inject TradeSaberClient tradeSaberClient
+@inject ILocalUserService localUserService
+
+@attribute [Authorize(Scopes.UploadFile)]
+
+<AuthorizeView Policy="@Scopes.CreatePack">
+    <MudCard Class="ma-1">
+        <MudCardContent>
+            <MudText Typo="Typo.h4">Create</MudText>
+            <MudForm @ref="createForm" @bind-IsValid="@createSuccess">
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField @bind-Value="name" T="string" Label="Name" Required="true" Immediate="true" RequiredError="Pack name is required!" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField @bind-Value="mainColor" T="string" Label="Main Color" Required="true" Adornment="Adornment.Start" AdornmentText="#" RequiredError="Main Color is required!" Immediate="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField @bind-Value="subColor" T="string" Label="Sub Color" Required="false" Adornment="Adornment.Start" AdornmentText="#" Immediate="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudTextField @bind-Value="description" T="string" Label="Description" Required="true" Variant="Variant.Text" Lines="3" Immediate="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudNumericField @bind-Value="value" T="float?" Label="Value" Required="false" Immediate="true" Adornment="Adornment.Start" AdornmentText="T" AdornmentColor="Color.Primary" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudNumericField @bind-Value="cardCount" T="int?" Label="Card Count" Placeholder="5" Required="false" Immediate="true" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12">
+                        <InputFile id="coverFileInput" OnChange="CoverImageChanged" hidden accept=".jpg, .jpeg, .png" />
+                        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.CalendarViewDay" for="coverFileInput">@(coverFile?.Name ?? "Upload Cover Image")</MudButton>
+                    </MudItem>
+
+                   @foreach (var rarityGroup in guaranteedRarities.Select((rare, i) => new { Rarity = rare, Index = i }))
+                    {
+                        <MudItem xs="12" sm="1" md="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Error" Class="ma-2" OnClick="() => guaranteedRarities.RemoveAt(rarityGroup.Index)" />
+                        </MudItem>
+                        <MudItem xs="12" sm="11" md="11">
+                            <MudAutocomplete Value="rarityGroup.Rarity" T="Rarity" Label="Rarity" Required="true" RequiredError="Rarity is required" ResetValueOnEmptyText="true"
+                                             SearchFunc="@FilterRarities" Immediate="true" ToStringFunc="@(r => r?.Name)" ValueChanged="r => guaranteedRarities[rarityGroup.Index] = r" />
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => guaranteedRarities.Add(null)">Add Guaranteed Rarity</MudButton>
+                    </MudItem>
+
+                   @foreach (var cardRefGroup in cardReferences.Select((cardRef, i) => new { CardReference = cardRef, Index = i }))
+                    {
+                        <MudItem xs="12" sm="1" md="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Error" Class="ma-2" OnClick="() => cardReferences.RemoveAt(cardRefGroup.Index)" />
+                        </MudItem>
+                        <MudItem xs="12" sm="7" md="7">
+                            <MudAutocomplete Value="cardRefGroup.CardReference.Value ?? null" T="Card" Label="Card" Required="true" RequiredError="Card is required" ResetValueOnEmptyText="true"
+                                             SearchFunc="@FilterCards" Immediate="true" ToStringFunc="CardWithSeriesToString" ValueChanged="c => cardReferences[cardRefGroup.Index].Value = c" />
+                        </MudItem>
+                        <MudItem xs="12" sm="2" md="2">
+                            <MudNumericField Value="cardRefGroup.CardReference.Boost" T="float?" Label="Boost" Min="0" Immediate="true" ValueChanged="b => cardReferences[cardRefGroup.Index].Boost = b" />
+                        </MudItem>
+                        <MudItem xs="12" sm="2" md="2">
+                            <MudSwitch Checked="cardRefGroup.CardReference.Guaranteed ?? false" T="bool" Label="Guaranteed" Color="Color.Primary" CheckedChanged="g => cardReferences[cardRefGroup.Index].Guaranteed = g" />
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => cardReferences.Add(new Reference<Card>(null!))">Add Card Referrence</MudButton>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="12" md="12" Class="pa-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ResetMainForm" Disabled="@uploading">Reset</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Upload" Disabled="@(!(createSuccess && coverFile is not null && !uploading))">Submit</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudCardContent>
+    </MudCard>
+</AuthorizeView>
+
+@code {
+
+    private bool uploading = false;
+    private bool createSuccess = false;
+    private MudForm createForm = null!;
+
+    private string name = string.Empty;
+    private string mainColor = string.Empty;
+    private string subColor = string.Empty;
+    private string description = string.Empty;
+    private float? value = null;
+    private int? cardCount = null;
+    private IBrowserFile? coverFile = null;
+
+    private List<Rarity?> guaranteedRarities = new();
+    private List<Reference<Card>> cardReferences = new();
+
+    private IEnumerable<Rarity>? CurrentRarities { get; set; }
+    private IEnumerable<Series>? CurrentSeries { get; set; }
+    private IEnumerable<Card>? CurrentCards { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentRarities = await tradeSaberClient.Rarities.AllRarities();
+        CurrentSeries = await tradeSaberClient.Series.AllSeries();
+        CurrentCards = await tradeSaberClient.Cards.AllCards();
+    }
+
+    private Task<IEnumerable<Rarity?>> FilterRarities(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return Task.FromResult<IEnumerable<Rarity?>>(CurrentRarities ?? Array.Empty<Rarity>());
+        return Task.FromResult<IEnumerable<Rarity?>>(CurrentRarities?.Where(cr => cr.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase)) ?? Array.Empty<Rarity>());
+    }
+
+    private Task<IEnumerable<Card?>> FilterCards(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return Task.FromResult<IEnumerable<Card?>>(CurrentCards ?? Array.Empty<Card>());
+        return Task.FromResult<IEnumerable<Card?>>(CurrentCards?.Where(cr => cr.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase) || CardSeriesNameSearch(cr, input)) ?? Array.Empty<Card>());
+    }
+
+    private Series? GetCachedSeriesInCard(Card card)
+    {
+        return CurrentSeries?.FirstOrDefault(s => s.ID == card.Series);
+    }
+
+    private bool CardSeriesNameSearch(Card card, string input)
+    {
+        if (CurrentSeries is null)
+            return false;
+        Series? series = CurrentSeries.FirstOrDefault(s => s.ID == card.Series);
+        if (series is null)
+            return false;
+        return series.Name.Contains(input, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private string CardWithSeriesToString(Card card)
+    {
+        Series? series = GetCachedSeriesInCard(card);
+        if (series is null)
+            return card.Name;
+        return $"{card.Name} [{series.Name}]";
+    }
+
+    private void CoverImageChanged(InputFileChangeEventArgs e)
+        => coverFile = e.File;
+
+    private void ResetMainForm()
+    {
+        name = string.Empty;
+        mainColor = string.Empty;
+        subColor = string.Empty;
+        description = string.Empty;
+        value = null;
+        cardCount = null;
+        coverFile = null;
+        guaranteedRarities.Clear();
+        cardReferences.Clear();
+        createForm.Reset();
+    }
+
+    private async Task Upload()
+    {
+        uploading = true;
+        Media? coverMedia = await tradeSaberClient.Media.UploadFile(coverFile!.OpenReadStream(), coverFile!.Name);
+        if (coverMedia is null)
+        {
+            snackbar.Add("Cover image could not be uploaded.", Severity.Error);
+            uploading = false;
+            return;
+        }
+        var cards = cardReferences.Any() ? cardReferences : null;
+        var rarities = guaranteedRarities.Any() ? guaranteedRarities.Where(r => r != null).Select(r => (r as Rarity)!) : null;
+        Pack? pack = await tradeSaberClient.Packs.CreatePack(name, description, coverMedia, new ColorTheme { Main = $"#{mainColor}", Highlight = string.IsNullOrWhitespace(subColor) ? null : $"#{subColor}" }, value, cardCount, rarities, cards);
+        if (pack is null)
+        {
+            snackbar.Add("Pack could not be created.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add($"Successfully created new pack '{pack.Name}'", Severity.Success);
+            ResetMainForm();
+        }
+        uploading = false;
+    }
+}

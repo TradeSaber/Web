@@ -4,7 +4,7 @@
 @inject TradeSaberClient tradeSaberClient
 @inject ILocalUserService localUserService
 
-@attribute [Authorize(Scopes.UploadFile)]
+@attribute [Authorize(Scopes.CreateCard)]
 
 <AuthorizeView Policy="@Scopes.CreateCard">
     <MudCard Class="ma-1">
