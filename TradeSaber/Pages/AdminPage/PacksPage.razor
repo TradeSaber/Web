@@ -175,7 +175,7 @@
         }
         var cards = cardReferences.Any() ? cardReferences : null;
         var rarities = guaranteedRarities.Any() ? guaranteedRarities.Where(r => r != null).Select(r => (r as Rarity)!) : null;
-        Pack? pack = await tradeSaberClient.Packs.CreatePack(name, description, coverMedia, new ColorTheme { Main = $"#{mainColor}", Highlight = string.IsNullOrWhitespace(subColor) ? null : $"#{subColor}" }, value, cardCount, rarities, cards);
+        Pack? pack = await tradeSaberClient.Packs.CreatePack(name, description, coverMedia, new ColorTheme { Main = $"#{mainColor}", Highlight = string.IsNullOrWhiteSpace(subColor) ? null : $"#{subColor}" }, value, cardCount, rarities, cards);
         if (pack is null)
         {
             snackbar.Add("Pack could not be created.", Severity.Error);
