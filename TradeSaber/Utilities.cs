@@ -9,6 +9,8 @@ namespace TradeSaber
 {
     public static class Utilities
     {
+        public const long MaxFileSize = 15000000;
+
         public static IServiceCollection ConstructSetting<TSettingsInterface, TSettingsModel>(this IServiceCollection services, IConfiguration configuration, string? name = null) where TSettingsModel : class, TSettingsInterface where TSettingsInterface : class
         {
             services.Configure<TSettingsModel>(configuration.GetSection(name ?? typeof(TSettingsModel).Name));

@@ -104,14 +104,14 @@
     private async Task Upload()
     {
         uploading = true;
-        Media? iconMedia = await tradeSaberClient.Media.UploadFile(iconFile!.OpenReadStream(), iconFile!.Name);
+        Media? iconMedia = await tradeSaberClient.Media.UploadFile(iconFile!.OpenReadStream(Utilities.MaxFileSize), iconFile!.Name);
         if (iconMedia is null)
         {
             snackbar.Add("Icon could not be uploaded.", Severity.Error);
             uploading = false;
             return;
         }
-        Media? bannerMedia = await tradeSaberClient.Media.UploadFile(bannerFile!.OpenReadStream(), bannerFile!.Name);
+        Media? bannerMedia = await tradeSaberClient.Media.UploadFile(bannerFile!.OpenReadStream(Utilities.MaxFileSize), bannerFile!.Name);
         if (bannerMedia is null)
         {
             snackbar.Add("Banner could not be uploaded.", Severity.Error);
@@ -120,8 +120,8 @@
         }
         Series? series = await tradeSaberClient.Series.CreateSeries(seriesName, seriesDescription, iconMedia, bannerMedia, new ColorTheme
         {
-            Main = mainColor,
-            Highlight = string.IsNullOrWhiteSpace(subColor) ? null : subColor
+            Main = $"#{mainColor}",
+            Highlight = string.IsNullOrWhiteSpace(subColor) ? null : $"#{subColor}"
         });
         if (series is null)
         {

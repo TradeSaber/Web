@@ -99,7 +99,7 @@
     private async Task UploadCard()
     {
         uploading = true;
-        Media? baseMedia = await tradeSaberClient.Media.UploadFile(baseFile!.OpenReadStream(), baseFile!.Name);
+        Media? baseMedia = await tradeSaberClient.Media.UploadFile(baseFile!.OpenReadStream(Utilities.MaxFileSize), baseFile!.Name);
         if (baseMedia is null)
         {
             snackbar.Add("Base image could not be uploaded.", Severity.Error);

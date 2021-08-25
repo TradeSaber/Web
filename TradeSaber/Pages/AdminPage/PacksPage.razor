@@ -166,7 +166,7 @@
     private async Task Upload()
     {
         uploading = true;
-        Media? coverMedia = await tradeSaberClient.Media.UploadFile(coverFile!.OpenReadStream(), coverFile!.Name);
+        Media? coverMedia = await tradeSaberClient.Media.UploadFile(coverFile!.OpenReadStream(Utilities.MaxFileSize), coverFile!.Name);
         if (coverMedia is null)
         {
             snackbar.Add("Cover image could not be uploaded.", Severity.Error);
